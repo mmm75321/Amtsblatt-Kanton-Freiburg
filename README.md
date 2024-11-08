@@ -13,6 +13,6 @@ search = "3280"
 Ausführen mittels pyhton3 amtsblatt.py.<br />
 Idealerweise wird ein Raspberry Pi und ein Cronjob verwendet. Zum Beispiel (läuft jeden Freitag um 12:00 Uhr):<br />
 ```console
-0 12 * * 5 root  /usr/bin/python3 /<pfad zur datei>/amtsblatt.py
+0 12 * * 5 <benutzer name> /usr/bin/python3 /<pfad zur datei>/amtsblatt.py
 ```
 Code ist frei verfügbar und ohne Gewähr, mach damit was du willst :)
