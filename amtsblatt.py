@@ -41,7 +41,6 @@ num_pages = len(reader.pages)
 # extract text and do the search
 for index, page in enumerate(reader.pages):
     text = page.extract_text()
-    # print(text)
     res_search = re.search(search, text)
     if (match := res_search) is not None:
         message = f"{message} Eintrag gefunden auf Seite {index+1}\n"
