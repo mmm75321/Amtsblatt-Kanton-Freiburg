@@ -46,6 +46,8 @@ for index, page in enumerate(reader.pages):
         message = f"{message} Eintrag gefunden auf Seite {index+1}\n"
         send = True
 
+os.remove(pdffile)
+
 if send:
     send_pushover(title, message)
 else:
