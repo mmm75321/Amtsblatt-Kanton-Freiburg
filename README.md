@@ -3,11 +3,13 @@ Kann dank Python3 fast überall laufen.<br />
 amtsblatt.py herunterladen.<br />
 In amtsblatt.py die Variablen definieren (vorab Applikation in Pushover erstellen).<br />
 ```python
-#pushover variables
+# Pushover Variablen: User und Token eintragen
 po_user = "***"
 po_token = "***"
 
-#search for string, ideally postal code
+# Suchbegriff eintragen, idealerweise Postleitzahl
+# Mehrere Begriffe mit Komma trennen
+# Keine Leerschläge
 search = "3280"
 ```
 Ausführen mittels pyhton3 amtsblatt.py.<br />
