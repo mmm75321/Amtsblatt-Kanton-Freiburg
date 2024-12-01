@@ -19,8 +19,8 @@ search = "3280"
 # Änderungen unterhalb von hier nicht notwendig
 # Weitere Variablen (zur Laufzeit gesetzt)
 date = datetime.datetime.now() + datetime.timedelta(days=-4)
-url = "https://abl.fr.ch/system/files/issues/pdfs/FO_" + date.strftime("%G") + "-" + date.strftime("%W") + ".pdf"
-title = f"Amtsblatt Ausgabe " + date.strftime("%W") + " - " + date.strftime("%G")
+url = f"https://abl.fr.ch/system/files/issues/pdfs/FO_{date.strftime('%G')}-{date.strftime('%W')}.pdf"
+title = f"Amtsblatt Ausgabe {date.strftime('%W')} - {date.strftime('%G')}"
 message = f"Suche nach «{search}» in \n{url}\n\n"
 send = False
 
@@ -35,38 +35,35 @@ def send_pushover(title, message):
 try:
     pdffile = wget.download(url)
     print("")
-except:
-    send_pushover(title, f"Download von {url} ist fehlgeschlagen.")
+except Exception as e:
+    send_pushover(title, f"Download von {url} ist fehlgeschlagen. Fehlermeldung: {e}")
     raise
 
 # PDF Datei öffnen
 try:
     reader = pypdf.PdfReader(pdffile)
-except:
-    send_pushover(title, f"Verarbeitung der PDF Datei {url} ist fehlgeschlagen.")
+except Exception as e:
+    send_pushover(title, f"Verarbeitung der PDF Datei {url} ist fehlgeschlagen. Fehlermeldung: {e}")
     os.remove(pdffile)
     raise
 
-# Anzahl Seiten der PDF Datei ermitteln
-num_pages = len(reader.pages)
-
 # Suchbegriff nach Kommas trennen
-splitsearch = [split.strip() for split in search.split(',')]
+search_terms = [split.strip() for split in search.split(',')]
 
 # Suche durchführen (Seite für Seite, Suchbegriff für Suchbegriff)
 for pindex, page in enumerate(reader.pages):
     text = page.extract_text() 
-    for svalue in splitsearch:
-        res_search = re.search(svalue, text)
+    for term in search_terms:
+        res_search = re.search(rf"\b{term}\b", text)
         if (match := res_search) is not None:
-            message = f"{message}Eintrag «{svalue}» gefunden auf Seite {pindex+1}\n" 
+            message += f"Eintrag «{term}» gefunden auf Seite {pindex+1}\n" 
             send = True
 
 # PDF Datei löschen
 os.remove(pdffile)
 
 # Pushover Nachricht senden
-if send:
-    send_pushover(title, message)
-else:
-    send_pushover(title,f"{message}Keine Einträge gefunden.")
+if not send:
+    message += f"Keine Einträge gefunden."
+
+send_pushover(title, message)
