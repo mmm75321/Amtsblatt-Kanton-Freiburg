@@ -4,7 +4,7 @@ import re
 import http.client
 import urllib
 import wget
-import datetime
+from datetime import datetime, timedelta
 import os
 
 # Pushover Variablen: User und Token eintragen
@@ -18,16 +18,20 @@ search = "3280"
 
 # Änderungen unterhalb von hier nicht notwendig
 # Weitere Variablen (zur Laufzeit gesetzt)
-date = datetime.datetime.now() + datetime.timedelta(days=-4)
-url = f"https://abl.fr.ch/system/files/issues/pdfs/FO_{date.strftime('%G')}-{date.strftime('%W')}.pdf"
-title = f"Amtsblatt Ausgabe {date.strftime('%W')} - {date.strftime('%G')}"
+heute = datetime.today()
+offset = (heute.weekday() + 3) % 7
+datum = heute - timedelta(days=offset)
+jahr = str(datum.year)
+ausgabe = f"0{str(round(datum.timetuple().tm_yday/7+0.5))}"[-2:]
+url = f"https://abl.fr.ch/system/files/issues/pdfs/FO_{jahr}-{ausgabe}.pdf"
+titel = f"Amtsblatt Ausgabe {ausgabe} - {jahr}"
 message = f"Suche nach «{search}» in \n{url}\n\n"
 send = False
 
 # Funktion um Pushovernachricht zu senden
-def send_pushover(title, message):
+def send_pushover(titel, message):
     conn = http.client.HTTPSConnection("api.pushover.net", 443)
-    conn.request("POST", "/1/messages.json", urllib.parse.urlencode({"token": po_token,"user": po_user,"message": message,"title": title})
+    conn.request("POST", "/1/messages.json", urllib.parse.urlencode({"token": po_token,"user": po_user,"message": message,"title": titel})
         , { "Content-type": "application/x-www-form-urlencoded" })
     conn.getresponse()
 
@@ -36,14 +40,14 @@ try:
     pdffile = wget.download(url)
     print("")
 except Exception as e:
-    send_pushover(title, f"Download von {url} ist fehlgeschlagen. Fehlermeldung: {e}")
+    send_pushover(titel, f"Download von {url} ist fehlgeschlagen. Fehlermeldung: {e}")
     raise
 
 # PDF Datei öffnen
 try:
     reader = pypdf.PdfReader(pdffile)
 except Exception as e:
-    send_pushover(title, f"Verarbeitung der PDF Datei {url} ist fehlgeschlagen. Fehlermeldung: {e}")
+    send_pushover(titel, f"Verarbeitung der PDF Datei {url} ist fehlgeschlagen. Fehlermeldung: {e}")
     os.remove(pdffile)
     raise
 
@@ -66,4 +70,4 @@ os.remove(pdffile)
 if not send:
     message += f"Keine Einträge gefunden."
 
-send_pushover(title, message)
+send_pushover(titel, message)
